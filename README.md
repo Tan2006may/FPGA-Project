@@ -1,101 +1,55 @@
-# FPGA-based MLP Implementation Using CORDIC/MAC IP and IEEE FP IP/LUT
-
----
-
-## Table of Contents
-
-1. [Overview](#overview)  
-2. [Introduction](#introduction)  
-3. [Methodology](#methodology)  
-   3.1 [IEEE FP IP LUT Approach](#ieee-fp-ip-lut-approach)  
-   3.2 [CORDIC-MAC Approach](#cordic-mac-approach)  
-4. [Results](#results)  
-5. [Discussion](#discussion)  
-6. [Conclusion](#conclusion)  
-7. [References](#references)  
-
----
-
-## Overview
-
-This project investigates two distinct FPGA-based neuron and Multilayer Perceptron (MLP) architectures. One design uses vendor-provided IEEE 754 floating-point multiplication IP combined with a Look-Up Table (LUT) implementation of the sigmoid activation function, while the other leverages hardware-optimized CORDIC (COordinate Rotation DIgital Computer) and MAC (Multiply-Accumulate) IP cores to achieve resource efficiency and speed.
-
-Both designs are implemented, synthesized, and post-implementation hardware metrics such as timing, resource utilization, power, and physical layout are analyzed and compared.
-
----
+# Comparative Evaluation of MLP Architectures Using CORDIC+MAC IP and IEEE FP IP+LUT
 
 ## Introduction
+This project explores the implementation and comparative analysis of two Multilayer Perceptron (MLP) neuron architectures on FPGA platforms. The goal is to balance computational precision, efficiency, and power consumption for neural network inference in real-time edge systems.
 
-Artificial neural networks are increasingly deployed on hardware for real-time and signal processing tasks, with FPGAs providing the parallelism and reconfigurability needed. Neurons compute weighted sums of inputs plus bias followed by a nonlinear activation like sigmoid.
+The two approaches evaluated are:
+1. **IEEE FP IP + LUT**: Utilizes vendor-supplied IEEE 754 floating-point IP cores for multiplication combined with a BRAM-based Look-Up Table (LUT) for sigmoid activation.
+2. **CORDIC-MAC**: Implements the sigmoid function approximation using an iterative CORDIC algorithm paired with pipelined MAC IPs for efficient weighted summation.
 
-An MLP consists of layers of such neurons, allowing complex function learning through nonlinear compositions. Efficient hardware implementations require balancing precision, resource usage, and speed.
-
----
+## Problem Statement
+Design, synthesize, and compare two contrasting neuron architectures tailored for FPGA:
+- **IEEE FP IP + LUT**: Focused on precision and dynamic range with floating-point computations and BRAM LUTs.
+- **CORDIC-MAC**: Focused on low-power, resource-efficient FPGA implementation using iterative CORDIC logic and dedicated MAC IPs.
 
 ## Methodology
+- RTL design in Verilog integrating IEEE FP and MAC IP cores with custom CORDIC logic
+- Synthesis and implementation using Xilinx Vivado tools
+- Detailed extraction and analysis of timing metrics: Worst Negative Slack (WNS), Hold Slack (WHS), Pulse Width Slack (WPWS)
+- Resource usage evaluation across LUTs, Flip-Flops (FF), BRAMs, and IOs
+- Power profiling (static and dynamic)
+- Physical layout visualization for floorplanning and area utilization
 
-### IEEE FP IP LUT Approach
+## Design Details
 
-- Uses FPGA vendor IEEE 754 floating-point multiplication IP for precise weighted sums.
-- Implements sigmoid activation function using a precomputed BRAM-based LUT for fast evaluation.
-- Emphasizes high numerical precision with modest memory usage.
-- Operates within timing constraints with no failing endpoints.
-- Utilizes minimal logic resources (LUTs, FFs), with some BRAM usage for LUT storage.
+### IEEE FP IP + LUT
+- Prioritizes computational precision using IEEE 754 floating-point IP.
+- Sigmoid function is approximated through LUT stored in BRAM.
+- Efficient resource usage: 5.27% LUTs, 4.91% FFs, 2% BRAM.
+- Timing margins are robust with no timing failures.
+- Total on-chip power: 0.072 W (mostly static).
+- Physical layout shows compact logic and concentrated BRAM blocks.
 
-### CORDIC-MAC Approach
-
-- Employs CORDIC algorithm hardware IP to compute nonlinear sigmoid function using iterative shift-add operations, reducing logic complexity.
-- Uses pipelined MAC IP cores for high-throughput multiply-accumulate computations.
-- Focuses on minimizing power and resource usage while maintaining throughput.
-- Successfully meets timing constraints with efficient hardware utilization.
-- Relies less on BRAM with slightly higher LUT and FF counts than the IEEE FP LUT approach.
-
----
-
-## Results
-
-| Metric               | IEEE FP IP LUT | CORDIC-MAC   |
-|----------------------|----------------|--------------|
-| LUTs Used            | 32             | 41           |
-| Flip-Flops Used      | 33             | 69           |
-| IO Used              | 66             | 64           |
-| Worst Negative Slack (ns) | 7.776          | 7.632        |
-| Worst Pulse Width Slack (ns) | 4.5            | 4.5          |
-| Total On-Chip Power (W)    | 0.117          | 0.07         |
-| Junction Temperature (°C)  | 25.6           | 25.3         |
-
-- All timing constraints were met with comfortable slack values.
-- The CORDIC-MAC approach achieves notable power savings compared to the IEEE FP IP LUT, at the cost of increased LUT and FF usage.
-- IO utilization is a primary bottleneck in both designs.
-
----
+### CORDIC-MAC
+- Replaces floating-point IP with iterative CORDIC algorithm for sigmoid approximation.
+- Utilizes multiple pipelined MAC IP cores for parallel weighted summation.
+- Higher logic utilization: 18.66% LUTs, 12.45% FFs, with zero BRAM usage.
+- Timing margins similarly robust with no failures.
+- Higher total on-chip power: 0.088 W due to increased dynamic logic activity.
+- Floorplan shows wider logic distribution reflecting increased LUT/FF use.
 
 ## Discussion
-
-The IEEE FP IP LUT design provides excellent numeric precision and is highly logic-efficient, thanks to dedicated floating-point units and BRAM-based sigmoid LUTs. However, it consumes more power primarily due to BRAM usage.
-
-The CORDIC-MAC implementation is optimized for low power, reducing BRAM dependency by computing activation functions algorithmically. It requires more logic elements but achieves roughly 40% lower power consumption.
-
-Both designs successfully meet post-synthesis timing and resource goals and can be chosen based on target application requirements: accuracy vs. power/efficiency trade-offs.
-
----
+- FPIP LUT architecture excels in accuracy, logic resource efficiency, and power consumption due to BRAM and floating-point advantages.
+- CORDIC-MAC trades off higher logic usage and dynamic power for BRAM reduction, suitable for embedded, power-sensitive applications.
+- Both meet timing requirements with zero failures.
+- IO remains a power bottleneck in both designs, highlighting the need for efficient interface design.
 
 ## Conclusion
-
-Both FPGA-based neuron architectures have been fully implemented, synthesized, and verified, meeting all functional and timing criteria.
-
-- Use IEEE FP IP LUT architecture when accuracy and maintainability are critical.
-- Use CORDIC-MAC design for power-sensitive deployments and energy-efficient hardware.
-
----
+Both FPGA-based MLP implementations are practical for real-time edge neural inference. The choice depends on system design priorities:
+- Use **FPIP LUT** for accuracy and power-efficient, resource-conservative implementations.
+- Use **CORDIC-MAC** for low-memory, power-aware designs on constrained embedded platforms.
 
 ## References
-
-- Xilinx Vivado Implementation Reports
-- FPGA vendor IP documentation
-- CORDIC algorithm literature
-- Neural network hardware design research
-
----
-
+- Design metrics and analyses derived from Xilinx Vivado post-implementation reports.
+- Source code and detailed project files: [https://github.com/Tan2006may/FPGA-Project](https://github.com/Tan2006may/FPGA-Project)
 
