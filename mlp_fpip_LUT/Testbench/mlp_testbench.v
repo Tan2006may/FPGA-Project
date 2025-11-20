@@ -39,14 +39,20 @@ initial begin
 
     #15 rst = 0;
 
+    // Initialize layer_inputs: 4 inputs, each 16-bit half-precision float/example values
     layer_inputs = {
-        32'h3fa00000, 32'h40a00000, 32'h40200000, 32'h40800000
+        16'h3fa0,  // example half-precision hex
+        16'h40a0,
+        16'h4020,
+        16'h4080
     };
 
+    // Initialize layer_weights: 16 weights (4 inputs * 4 neurons), 16-bit each
     layer_weights = {
-        32'h3f800000, 32'h40000000, 32'h40400000, 32'h40800000,
-        32'h40a00000, 32'h40c00000, 32'h40e00000, 32'h41000000,
-        32'h41000000, 32'h40e00000, 32'h40c00000, 32'h40a00000
+        16'h3f80, 16'h4000, 16'h4040, 16'h4080,
+        16'h40a0, 16'h40c0, 16'h40e0, 16'h4100,
+        16'h4100, 16'h40e0, 16'h40c0, 16'h40a0,
+        16'h4080, 16'h4040, 16'h4000, 16'h3f80
     };
 
     lut_addrs = 0;
